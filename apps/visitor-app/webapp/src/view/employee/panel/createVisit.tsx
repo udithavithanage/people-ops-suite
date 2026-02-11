@@ -33,11 +33,11 @@ import {
   CardContent,
   IconButton,
   InputAdornment,
-  MenuItem,
   Container,
   Autocomplete,
   Avatar,
   CircularProgress,
+  MenuItem,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -78,6 +78,7 @@ import {
   fetchEmployees,
   loadMoreEmployees,
 } from "@root/src/slices/employeeSlice/employees";
+import { customList } from "country-codes-list";
 
 dayjs.extend(utc);
 dayjs.extend(isSameOrAfter);
@@ -112,51 +113,11 @@ const AVAILABLE_FLOORS_AND_ROOMS = [
   { floor: "Rooftop", rooms: ["Basketball Court"] },
 ];
 
-const COUNTRY_CODES = [
-  { code: "+1", country: "US/CA", flag: "🇺🇸" },
-  { code: "+44", country: "GB", flag: "🇬🇧" },
-  { code: "+91", country: "IN", flag: "🇮🇳" },
-  { code: "+86", country: "CN", flag: "🇨🇳" },
-  { code: "+49", country: "DE", flag: "🇩🇪" },
-  { code: "+33", country: "FR", flag: "🇫🇷" },
-  { code: "+81", country: "JP", flag: "🇯🇵" },
-  { code: "+82", country: "KR", flag: "🇰🇷" },
-  { code: "+61", country: "AU", flag: "🇦🇺" },
-  { code: "+55", country: "BR", flag: "🇧🇷" },
-  { code: "+7", country: "RU/KZ", flag: "🇷🇺" },
-  { code: "+20", country: "EG", flag: "🇪🇬" },
-  { code: "+27", country: "ZA", flag: "🇿🇦" },
-  { code: "+34", country: "ES", flag: "🇪🇸" },
-  { code: "+39", country: "IT", flag: "🇮🇹" },
-  { code: "+31", country: "NL", flag: "🇳🇱" },
-  { code: "+32", country: "BE", flag: "🇧🇪" },
-  { code: "+46", country: "SE", flag: "🇸🇪" },
-  { code: "+47", country: "NO", flag: "🇳🇴" },
-  { code: "+48", country: "PL", flag: "🇵🇱" },
-  { code: "+351", country: "PT", flag: "🇵🇹" },
-  { code: "+41", country: "CH", flag: "🇨🇭" },
-  { code: "+43", country: "AT", flag: "🇦🇹" },
-  { code: "+60", country: "MY", flag: "🇲🇾" },
-  { code: "+62", country: "ID", flag: "🇮🇩" },
-  { code: "+63", country: "PH", flag: "🇵🇭" },
-  { code: "+64", country: "NZ", flag: "🇳🇿" },
-  { code: "+66", country: "TH", flag: "🇹🇭" },
-  { code: "+90", country: "TR", flag: "🇹🇷" },
-  { code: "+92", country: "PK", flag: "🇵🇰" },
-  { code: "+95", country: "MM", flag: "🇲🇲" },
-  { code: "+971", country: "AE", flag: "🇦🇪" },
-  { code: "+972", country: "IL", flag: "🇮🇱" },
-  { code: "+973", country: "BH", flag: "🇧🇭" },
-  { code: "+974", country: "QA", flag: "🇶🇦" },
-  { code: "+975", country: "BT", flag: "🇧🇹" },
-  { code: "+976", country: "MN", flag: "🇲🇳" },
-  { code: "+977", country: "NP", flag: "🇳🇵" },
-  { code: "+966", country: "SA", flag: "🇸🇦" },
-  { code: "+886", country: "TW", flag: "🇹🇼" },
-  { code: "+880", country: "BD", flag: "🇧🇩" },
-  { code: "+84", country: "VN", flag: "🇻🇳" },
-  { code: "+94", country: "LK", flag: "🇱🇰" },
-];
+// Get country codes list with flags
+const COUNTRY_CODES = customList(
+  "countryCode",
+  "{countryNameEn}: +{countryCallingCode}",
+);
 
 const defaultVisitor: VisitorDetail = {
   name: "",
@@ -954,13 +915,29 @@ function CreateVisit() {
                               disabled={
                                 visitor.status === VisitorStatus.Completed
                               }
-                              sx={{ minWidth: 80, mr: 1 }}
+                              sx={{ minWidth: 120, mr: 1 }}
+                              SelectProps={{
+                                MenuProps: {
+                                  PaperProps: {
+                                    style: {
+                                      maxHeight: 300,
+                                    },
+                                  },
+                                },
+                              }}
                             >
-                              {COUNTRY_CODES.map((c) => (
-                                <MenuItem key={c.code} value={c.code}>
-                                  {c.flag} {c.code}
-                                </MenuItem>
-                              ))}
+                              {Object.entries(COUNTRY_CODES).map(
+                                ([code, name]) => {
+                                  const dialCode = name
+                                    .toString()
+                                    .split("+")[1];
+                                  return (
+                                    <MenuItem key={code} value={`+${dialCode}`}>
+                                      {code} +{dialCode}
+                                    </MenuItem>
+                                  );
+                                },
+                              )}
                             </TextField>
                           </InputAdornment>
                         ),
@@ -988,7 +965,7 @@ function CreateVisit() {
                         startIcon={<CheckIcon />}
                         disabled={formik.isSubmitting}
                       >
-                        Submit Visitor
+                        Submit
                       </Button>
                     </Grid>
                   )}
@@ -1065,7 +1042,7 @@ function CreateVisit() {
                     onClick={() => addNewVisitorBlock(formik)}
                     disabled={!canAddMore}
                   >
-                    Add Another Visitor
+                    Add Visitor
                   </Button>
                 </Box>
 
@@ -1085,7 +1062,7 @@ function CreateVisit() {
                         )
                       }
                     >
-                      Finish & Close Visit
+                      Finish Visit Registration
                     </Button>
                   </Box>
                 )}
